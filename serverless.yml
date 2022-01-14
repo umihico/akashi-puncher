@@ -26,3 +26,5 @@ functions:
       EXTRA_OPERATION_SELECT: ${file(env.yml):extra_operation_select}
     image:
       name: latest
+    events:
+      - schedule: cron(0 10 * * ? *) # 7 pm in Japan
