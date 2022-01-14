@@ -62,17 +62,19 @@ class Chrome(webdriver.Chrome):
                 if i > 10:
                     raise Exception(f"Element not found: {xpath}")
 
-    def open_todays_detail(chrome,):
+    def open_todays_detail(chrome):
         url = "https://atnd.ak4.jp/attendance/"
         yyyy_mm_dd = get_todays_yyyy_mm_dd()
         print('open_todays_detail', yyyy_mm_dd)
         chrome.login(url)
         chrome.find_element_by_xpath(
-            f"//a[contains(@href, '/requests/new?date={yyyy_mm_dd}') and contains(text(), '申請')]").click()  # スクロールが変で１つズレた申請ボタンを押すため、スクロールを消化させるダミー
-        chrome.find_element_by_xpath(
-            f"//div[@class='modal__close js-modal-close' and ./following-sibling::h1[text()='申請']]").click()
-        chrome.find_element_by_xpath(
             f"//a[contains(@href, '/requests/new?date={yyyy_mm_dd}') and contains(text(), '申請')]").click()
+        if chrome.find_element_by_xpath("//input[@data-request-apply-date-input]").get_attribute("value") != time.strftime('%Y/%m/%d'):
+            # スクロールが変で１つズレた申請ボタンを押すことがあるため再トライ
+            chrome.find_element_by_xpath(
+                f"//div[@class='modal__close js-modal-close' and ./following-sibling::h1[text()='申請']]").click()
+            chrome.find_element_by_xpath(
+                f"//a[contains(@href, '/requests/new?date={yyyy_mm_dd}') and contains(text(), '申請')]").click()
 
     def extra_operation_if_office(chrome):
         chrome.open_todays_detail()
@@ -119,10 +121,19 @@ class Chrome(webdriver.Chrome):
         chrome.find_element_by_xpath(
             '//p[text()="本当に打刻しますか？"]/following-sibling::button[text()="OK"]').click()
 
+    def did_work_today(chrome):
+        url = "https://atnd.ak4.jp/attendance/"
+        chrome.login(url)
+        elm = chrome.find_element_by_xpath(
+            f"//tr[@id='working_report_{time.strftime('%Y%m%d')}']/td[@data-key='result_start_time']//span")
+        return False if elm.text == "--:--" else True
+
 
 def handler(event=None, context=None, chrome=None):
     chrome = chrome if chrome is not None else get_chrome()
     if 'location' not in event:
+        if not chrome.did_work_today():
+            return "ok"
         action = "退勤"
         geo = chrome.get_morning_gps()
     else:
@@ -139,10 +150,10 @@ def handler(event=None, context=None, chrome=None):
 if __name__ == '__main__':
     try:
         chrome = get_chrome()
-        handler(event={
+        print(handler(event={
             # 'location': 'home',
             # 'location': 'office',
-        }, chrome=chrome)
+        }, chrome=chrome))
     except Exception as e:
         import traceback
         traceback.print_exc()
