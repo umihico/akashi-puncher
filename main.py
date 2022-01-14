@@ -62,9 +62,9 @@ class Chrome(webdriver.Chrome):
                 if i > 10:
                     raise Exception(f"Element not found: {xpath}")
 
-    def open_todays_detail(chrome, yyyy_mm_dd=None):
+    def open_todays_detail(chrome,):
         url = "https://atnd.ak4.jp/attendance/"
-        yyyy_mm_dd = yyyy_mm_dd if yyyy_mm_dd is not None else get_todays_yyyy_mm_dd()
+        yyyy_mm_dd = get_todays_yyyy_mm_dd()
         print('open_todays_detail', yyyy_mm_dd)
         chrome.login(url)
         chrome.find_element_by_xpath(
@@ -74,8 +74,8 @@ class Chrome(webdriver.Chrome):
         chrome.find_element_by_xpath(
             f"//a[contains(@href, '/requests/new?date={yyyy_mm_dd}') and contains(text(), '申請')]").click()
 
-    def extra_operation_if_office(chrome, yyyy_mm_dd=None):
-        chrome.open_todays_detail(yyyy_mm_dd=yyyy_mm_dd)
+    def extra_operation_if_office(chrome):
+        chrome.open_todays_detail()
         select = Select(chrome.find_element_by_xpath(
             "//select[@id='form_operations_']"))
         select.select_by_visible_text(os.environ["EXTRA_OPERATION_SELECT"])
@@ -84,8 +84,8 @@ class Chrome(webdriver.Chrome):
         chrome.find_element_by_xpath(
             '//input[@value="確定" and @type="submit"]').click()
 
-    def get_morning_gps(chrome, yyyy_mm_dd=None):
-        chrome.open_todays_detail(yyyy_mm_dd=yyyy_mm_dd)
+    def get_morning_gps(chrome):
+        chrome.open_todays_detail()
         google_map_link = chrome.find_element_by_xpath(
             "//a[contains(@href, 'https://www.google.co.jp/maps') and text()='GPS']")
         latitude, longitude = map(float, google_map_link.get_attribute('href').split("q=")[
@@ -109,7 +109,7 @@ class Chrome(webdriver.Chrome):
         chrome.find_element_by_xpath(
             '//input[@value="ログイン" and @type="submit"]').click()
 
-    def punch(chrome, action, geo=None, yyyy_mm_dd=None):
+    def punch(chrome, action, geo=None):
         if geo:
             chrome.execute_cdp_cmd("Page.setGeolocationOverride", {
                 "latitude": float(geo[0]), "longitude": float(geo[1]), "accuracy": 0.0001})
