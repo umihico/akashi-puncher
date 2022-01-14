@@ -1,0 +1,28 @@
+service: ${file(env.yml):project_name}
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'prod'}
+  region: ${file(env.yml):project_region}
+  ecr:
+    images:
+      latest: # tag
+        path: ./
+        platform: linux/amd64
+
+functions:
+  main:
+    timeout: 60
+    memorySize: 2048
+    environment:
+      AKASHI_COMPANY_ID: ${file(env.yml):akashi_company_id}
+      AKASHI_EMPLOYEE_ID: ${file(env.yml):akashi_employee_id}
+      AKASHI_PASSWORD: ${file(env.yml):akashi_password}
+      HOME_LATITUDE: ${file(env.yml):home_latitude}
+      HOME_LONGITUDE: ${file(env.yml):home_longitude}
+      OFFICE_LATITUDE: ${file(env.yml):office_latitude}
+      OFFICE_LONGITUDE: ${file(env.yml):office_longitude}
+      EXTRA_OPERATION_TEXT: ${file(env.yml):extra_operation_text}
+      EXTRA_OPERATION_SELECT: ${file(env.yml):extra_operation_select}
+    image:
+      name: latest
