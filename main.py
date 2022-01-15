@@ -1,4 +1,3 @@
-from tkinter.messagebox import NO
 from selenium import webdriver
 from tempfile import mkdtemp
 import time
@@ -130,10 +129,19 @@ class Chrome(webdriver.Chrome):
 
 
 def handler(event=None, context=None, chrome=None):
+    print(event)
+    if "path" in event:
+        event["location"] = {
+            "/remote-work": "home",
+            "/office-work": "office",
+        }[event["path"]]
     chrome = chrome if chrome is not None else get_chrome()
     if 'location' not in event:
         if not chrome.did_work_today():
-            return "ok"
+            return {
+                "statusCode": 200,
+                "body": json.dumps({"status": "no_work"})
+            }
         action = "退勤"
         geo = chrome.get_morning_gps()
     else:
@@ -144,7 +152,14 @@ def handler(event=None, context=None, chrome=None):
             'home': (os.environ['HOME_LATITUDE'], os.environ['HOME_LONGITUDE']),
         }[location]
     chrome.punch(action=action, geo=geo)
-    return "ok"
+    return {
+        "statusCode": 200,
+        "body": json.dumps({
+            "status": "punched",
+            "geo": geo,
+            "action": action,
+        })
+    }
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ provider:
   name: aws
   stage: ${opt:stage, 'prod'}
   region: ${file(env.yml):project_region}
+  profile: ${file(env.yml):profile_name}
   ecr:
     images:
       latest: # tag
@@ -28,3 +29,5 @@ functions:
       name: latest
     events:
       - schedule: cron(0 10 * * ? *) # 7 pm in Japan
+      - http: GET remote-work
+      - http: GET office-work
