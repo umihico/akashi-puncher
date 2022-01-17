@@ -119,6 +119,7 @@ class Chrome(webdriver.Chrome):
             f'//button[@data-name="{action}" and @type="submit"]').click()
         chrome.find_element_by_xpath(
             '//p[text()="本当に打刻しますか？"]/following-sibling::button[text()="OK"]').click()
+        time.sleep(3)
 
     def did_work_today(chrome):
         url = "https://atnd.ak4.jp/attendance/"
